@@ -6,28 +6,9 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Gauas/socket-hub/protocol"
 	"github.com/Gauas/socket-hub/realtime"
 )
-
-type command struct {
-	Method string          `json:"method"`
-	Params json.RawMessage `json:"params"`
-}
-
-type publishParams struct {
-	Channel string          `json:"channel"`
-	Data    json.RawMessage `json:"data"`
-}
-
-type reply struct {
-	Error  *apiError `json:"error"`
-	Result any       `json:"result,omitempty"`
-}
-
-type apiError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
 
 func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -44,9 +25,9 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 
 	for scanner.Scan() {
-		var cmd command
-		if err := json.Unmarshal(scanner.Bytes(), &cmd); err != nil {
-			_ = encoder.Encode(reply{Error: &apiError{Code: 400, Message: "invalid command"}})
+		cmd, err := protocol.Decode(scanner.Bytes())
+		if err != nil {
+			_ = encoder.Encode(protocol.Fail(400, "invalid command"))
 			continue
 		}
 
@@ -54,20 +35,17 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *Server) handle(r *http.Request, cmd command) reply {
-	if cmd.Method != "publish" {
-		return reply{Error: &apiError{Code: 400, Message: "unsupported method"}}
+func (s *Server) handle(r *http.Request, cmd protocol.Command) protocol.Reply {
+	if cmd.Method != protocol.Publish {
+		return protocol.Fail(400, "unsupported method")
 	}
 
-	var params publishParams
-	if err := json.Unmarshal(cmd.Params, &params); err != nil {
-		return reply{Error: &apiError{Code: 400, Message: "invalid publish params"}}
+	params, err := cmd.Publish()
+	if err != nil {
+		return protocol.Fail(400, "invalid publish params")
 	}
 	if params.Channel == "" {
-		return reply{Error: &apiError{Code: 400, Message: "channel is required"}}
-	}
-	if len(params.Data) == 0 {
-		params.Data = json.RawMessage("{}")
+		return protocol.Fail(400, "channel is required")
 	}
 
 	result, err := s.hub.Publish(r.Context(), realtime.Publication{
@@ -75,10 +53,10 @@ func (s *Server) handle(r *http.Request, cmd command) reply {
 		Data:    params.Data,
 	})
 	if err != nil {
-		return reply{Error: &apiError{Code: 500, Message: err.Error()}}
+		return protocol.Fail(500, err.Error())
 	}
 
-	return reply{Result: result}
+	return protocol.Reply{Result: result}
 }
 
 func (s *Server) authorized(r *http.Request) bool {
