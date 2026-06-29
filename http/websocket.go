@@ -27,7 +27,7 @@ func (s *Server) websocket(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "channel is required"})
 		return
 	}
-	if !isWebSocket(r) {
+	if !upgrade(r) {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "websocket upgrade is required"})
 		return
 	}
@@ -66,7 +66,7 @@ func (s *Server) websocket(w http.ResponseWriter, r *http.Request) {
 	client.Write(ctx)
 }
 
-func isWebSocket(r *http.Request) bool {
+func upgrade(r *http.Request) bool {
 	return strings.EqualFold(r.Header.Get("Upgrade"), "websocket") &&
 		strings.Contains(strings.ToLower(r.Header.Get("Connection")), "upgrade") &&
 		r.Header.Get("Sec-WebSocket-Key") != ""
