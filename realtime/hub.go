@@ -33,7 +33,7 @@ func New() *Hub {
 	}
 }
 
-func (h *Hub) Subscribe(channel string, conn Conn) *Client {
+func (h *Hub) Subscribe(channel string, conn Connection) *Client {
 	client := &Client{
 		channel: channel,
 		conn:    conn,

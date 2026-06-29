@@ -2,14 +2,14 @@ package realtime
 
 import "context"
 
-type Conn interface {
+type Connection interface {
 	Write(context.Context, []byte) error
 	Close() error
 }
 
 type Client struct {
 	channel string
-	conn    Conn
+	conn    Connection
 	send    chan []byte
 	done    chan struct{}
 }

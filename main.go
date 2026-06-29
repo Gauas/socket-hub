@@ -8,14 +8,14 @@ import (
 	"syscall"
 
 	"github.com/Gauas/socket-hub/config"
-	"github.com/Gauas/socket-hub/http"
 	"github.com/Gauas/socket-hub/realtime"
+	"github.com/Gauas/socket-hub/server"
 )
 
 func main() {
 	cfg := config.New()
 	hub := realtime.New()
-	server := http.New(cfg, hub)
+	server := server.New(cfg, hub)
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()

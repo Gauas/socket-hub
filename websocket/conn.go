@@ -6,16 +6,16 @@ import (
 	"time"
 )
 
-type Conn struct {
+type Connection struct {
 	conn    net.Conn
 	timeout time.Duration
 }
 
-func New(conn net.Conn, timeout time.Duration) *Conn {
-	return &Conn{conn: conn, timeout: timeout}
+func New(conn net.Conn, timeout time.Duration) *Connection {
+	return &Connection{conn: conn, timeout: timeout}
 }
 
-func (c *Conn) Write(ctx context.Context, payload []byte) error {
+func (c *Connection) Write(ctx context.Context, payload []byte) error {
 	deadline, ok := ctx.Deadline()
 	if !ok {
 		deadline = time.Now().Add(c.timeout)
@@ -24,6 +24,6 @@ func (c *Conn) Write(ctx context.Context, payload []byte) error {
 	return Write(c.conn, payload)
 }
 
-func (c *Conn) Close() error {
+func (c *Connection) Close() error {
 	return c.conn.Close()
 }
