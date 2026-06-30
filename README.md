@@ -15,7 +15,6 @@ Realtime WebSocket hub for Gauas services.
 ## Environment
 
 ```env
-ENV=development
 PORT=8085
 SOCKET_API_KEY=
 WRITE_TIMEOUT_SECONDS=10

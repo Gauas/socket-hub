@@ -7,7 +7,6 @@ import (
 )
 
 type Config struct {
-	Env          string
 	ServiceName  string
 	Port         string
 	APIKey       string
@@ -16,7 +15,6 @@ type Config struct {
 
 func New() *Config {
 	return &Config{
-		Env:          get("ENV", "development"),
 		ServiceName:  "socket-hub",
 		Port:         get("PORT", "8085"),
 		APIKey:       get("SOCKET_API_KEY", ""),

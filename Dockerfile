@@ -10,8 +10,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /out/socket-hub ./main.go
 
 FROM alpine:3.22 AS runtime
 
-ENV ENV=production
-
 WORKDIR /app
 
 RUN apk add --no-cache tini && \
